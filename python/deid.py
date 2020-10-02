@@ -6,7 +6,7 @@ phone_pattern ='(\d{3}[-\.\s/]??\d{3}[-\.\s/]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s/]??
 ph_reg = re.compile(phone_pattern)
 
 
-def check_for_phone(patient,note,chunk, output_handle):
+def check_for_phone(patient,note, chunk, output_handle):
     """
     Inputs:
         - patient: Patient Number, will be printed in each occurance of personal information found
@@ -37,10 +37,10 @@ def check_for_phone(patient,note,chunk, output_handle):
                 
             # debug print, 'end=" "' stops print() from adding a new line
             print(patient, note,end=' ')
-            print((match.start()-offset),match.end()-offset, match.group())
+            print((match.start()-offset), match.end()-offset, match.group())
                 
             # create the string that we want to write to file ('start start end')    
-            result = str(match.start()-offset) + ' ' + str(match.start()-offset) +' '+ str(match.end()-offset) 
+            result = str(match.start()-offset) + ' ' + str(match.start()-offset) +' '+ str(match.end()-offset)
             
             # write the result to one line of output
             output_handle.write(result+'\n')
@@ -84,19 +84,40 @@ def deid_phone(text_path= 'id.text', output_path = 'phone.phi'):
             # whenever we see the start_of_record pattern, note patient and note numbers and start 
             # adding everything to the 'chunk' until we see the end_of_record.
             chunk = ''
-            for line in text:
-                record_start = re.findall(start_of_record_pattern,line,flags=re.IGNORECASE)
+            for line in text: # 每次读取一行text
+                # print(line) # 打印并显示
+                # 寻找有record start pattern的行并且返回一个list
+                record_start = re.findall(start_of_record_pattern, line, flags=re.IGNORECASE)
+                # print("在当前的记录里，寻找到record start：", record_start)
+                # print("在当前的记录里, record start的长度为", len(record_start))
+
+                # 如果list存在 就说明找到了record_start那一行
                 if len(record_start):
+                    # print(len(record_start))
+                    # print("find record start")
+                    # 提取里面的 patient 和 note
                     patient, note = record_start[0]
+                    # print("current patient:", patient)
+                    # print("note:", note)
+
                 chunk += line
 
                 # check to see if we have seen the end of one note
                 record_end = re.findall(end_of_record_pattern, line,flags=re.IGNORECASE)
-
+                # 如果找到了record_end list
+                # 到目前为止找到了一个完整的record 并且把它放在chunk中
                 if len(record_end):
                     # Now we have a full patient note stored in `chunk`, along with patient numerb and note number
                     # pass all to check_for_phone to find any phone numbers in note.
-                    check_for_phone(patient,note,chunk.strip(), output_file)
+                    # 调用check for phone
+                    # patient
+                    # note
+                    # print("====================")
+                    # print(chunk)
+                    # print(chunk.strip())
+                    # print("====================")
+                    # print(patient, " ", note, " ", chunk.strip())
+                    check_for_phone(patient, note, chunk.strip(), output_file)
                     
                     # initialize the chunk for the next note to be read
                     chunk = ''
